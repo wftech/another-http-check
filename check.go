@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -150,6 +151,9 @@ func Check(r *Request, e *Expected) (string, int, error) {
 	if err != nil {
 		if r.Verbose {
 			fmt.Println(fmt.Sprintf(">> client.GET error: %v", err))
+		}
+		if err, ok := err.(net.Error); ok && err.Timeout() {
+			return fmt.Sprintf("CRITICAL - Timeout - No response recieved in %d seconds|%s", r.Timeout, timeInfo()), EXIT_CRITICAL, nil
 		}
 		return fmt.Sprintf("CRITICAL - %s|%s", err.Error(), timeInfo()), EXIT_CRITICAL, nil
 	}

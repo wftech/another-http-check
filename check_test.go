@@ -105,7 +105,7 @@ func TestTimeout(t *testing.T) {
 		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
 	}
 
-	if !strings.Contains(msg, "Client.Timeout exceeded while awaiting headers") {
+	if !strings.Contains(msg, "Timeout - No response recieved in") {
 		t.Errorf("Non-timeout message renturned [URI: %s]", r.URI)
 	}
 }

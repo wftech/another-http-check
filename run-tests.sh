@@ -28,6 +28,10 @@ echo
 echo "Status code: $?"
 echo
 
+./another-http-check -H httpbin.org -p 443 -u /delay/10 -t 5 -v
+echo "Status code: $?"
+echo
+
 ./another-http-check -H httpbin.org -p 443 -C 15 -S -v
 echo "Status code: $?"
 echo
