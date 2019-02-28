@@ -58,8 +58,9 @@ func main() {
 
 	if strings.Contains(options.Auth, ":") {
 		authParts := strings.Split(options.Auth, ":")
-		if len(authParts) != 1 {
-			// TODO
+		if len(authParts) != 2 {
+			fmt.Println("UNKNOWN - Username and password not given: provide -a|--auth username:password")
+			os.Exit(EXIT_UNKNOWN)
 		}
 		authUser = authParts[0]
 		authPassword = authParts[1]
@@ -67,6 +68,11 @@ func main() {
 
 	if authType == AUTH_NONE && len(authUser) > 0 && len(authPassword) > 0 {
 		authType = AUTH_BASIC
+	}
+
+	if len(options.Auth) > 0 && len(authUser) == 0 && len(authPassword) == 0 {
+		fmt.Println("UNKNOWN - Username and password not given: provide -a|--auth username:password")
+		os.Exit(EXIT_UNKNOWN)
 	}
 
 	r := &Request{
@@ -100,7 +106,8 @@ func main() {
 	if strings.Contains(options.SSLExpiration, ",") {
 		SSLParts := strings.Split(options.SSLExpiration, ",")
 		if len(SSLParts) != 2 {
-			// TODO
+			fmt.Println("UNKNOWN - SSL check has invalid parametrs: provide e.g. -C 14,7")
+			os.Exit(EXIT_UNKNOWN)
 		}
 		SSLWarning, _ = strconv.Atoi(SSLParts[0])
 		SSLCritical, _ = strconv.Atoi(SSLParts[1])
