@@ -65,6 +65,10 @@ func main() {
 		authPassword = authParts[1]
 	}
 
+	if authType == AUTH_NONE && len(authUser) > 0 && len(authPassword) > 0 {
+		authType = AUTH_BASIC
+	}
+
 	r := &Request{
 		Host:      options.Host,
 		IPAddress: options.IPAdress,
