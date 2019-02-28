@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Azure/go-ntlmssp"
@@ -59,8 +60,8 @@ type Expected struct {
 }
 
 func checkStatusCode(code int, e *Expected) bool {
-	for _, expectdCode := range e.StatusCodes {
-		if expectdCode == code {
+	for _, expectedCode := range e.StatusCodes {
+		if expectedCode == code {
 			return true
 		}
 	}
@@ -78,10 +79,10 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 			checkedCerts[string(cert.Signature)] = true
 			expiresIn := int(cert.NotAfter.Sub(timeNow).Hours())
 			if e.SSLCheck.DaysCritical > 0 && e.SSLCheck.DaysCritical*24 >= expiresIn {
-				return "CRITICAL", EXIT_CRITICAL
+				return fmt.Sprintf("CRITICAL - SSL cert expires in %f days", float32(expiresIn)/24), EXIT_CRITICAL
 			}
 			if e.SSLCheck.DaysWarning > 0 && e.SSLCheck.DaysWarning*24 >= expiresIn {
-				return "WARNING", EXIT_WARNING
+				return fmt.Sprintf("WARNING - SSL cert expires in %f dasy", float32(expiresIn)/24), EXIT_WARNING
 			}
 		}
 	}
@@ -90,7 +91,7 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 
 func Check(r *Request, e *Expected) (string, int, error) {
 	if len(r.Host) == 0 && len(r.IPAddress) == 0 {
-		return "UNKNOWN", EXIT_UNKNOWN, nil
+		return "UNKNOWN - No host or IP address given", EXIT_UNKNOWN, nil
 	}
 
 	var host string
@@ -141,12 +142,16 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		request.SetBasicAuth(r.Authentication.User, r.Authentication.Password)
 	}
 
+	start := time.Now()
+	timeInfo := func() string {
+		return fmt.Sprintf("time = %fs", float32(time.Now().UnixNano()-start.UnixNano())/float32(1000000000))
+	}
 	res, err := client.Do(request)
 	if err != nil {
 		if r.Verbose {
 			fmt.Println(fmt.Sprintf(">> client.GET error: %v", err))
 		}
-		return "CRITICAL", EXIT_CRITICAL, err
+		return fmt.Sprintf("CRITICAL - %s|%s", err.Error(), timeInfo()), EXIT_CRITICAL, nil
 	}
 
 	defer res.Body.Close()
@@ -157,7 +162,11 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	// Check status code
 	if !checkStatusCode(res.StatusCode, e) {
-		return "CRITICAL", EXIT_CRITICAL, nil
+		var expectedStatusCodes []string
+		for _, code := range e.StatusCodes {
+			expectedStatusCodes = append(expectedStatusCodes, strconv.Itoa(code))
+		}
+		return fmt.Sprintf("CRITICAL - Got  response HTTP/1.1 %s, expected %s|%s", strconv.Itoa(res.StatusCode), strings.Join(expectedStatusCodes, ", "), timeInfo()), EXIT_CRITICAL, nil
 	}
 
 	// Check body text
@@ -165,10 +174,10 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		expectedText := []byte(e.BodyText)
 		bodyBytes, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return "CRITICAL", EXIT_CRITICAL, nil
+			return "UNKNOWN", EXIT_UNKNOWN, err
 		}
 		if !bytes.Contains(bodyBytes, expectedText) {
-			return "CRITICAL", EXIT_CRITICAL, nil
+			return fmt.Sprintf("CRITICAL - String '%s' not found in body|%s", e.BodyText, timeInfo()), EXIT_CRITICAL, nil
 		}
 	}
 
@@ -176,9 +185,9 @@ func Check(r *Request, e *Expected) (string, int, error) {
 	if e.SSLCheck.Run {
 		SSLMsg, SSLExit := checkCerts(res.TLS.VerifiedChains, e)
 		if SSLExit != EXIT_OK {
-			return SSLMsg, SSLExit, nil
+			return fmt.Sprintf("%s|%s", SSLMsg, timeInfo()), SSLExit, nil
 		}
 	}
 
-	return "OK", EXIT_OK, nil
+	return fmt.Sprintf("OK - Got response HTTP/1.1 %s|%s", strconv.Itoa(res.StatusCode), timeInfo()), EXIT_OK, nil
 }

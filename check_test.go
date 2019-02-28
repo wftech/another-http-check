@@ -101,12 +101,12 @@ func TestTimeout(t *testing.T) {
 		t.Errorf("Wrong exit code [URI: %s]", r.URI)
 	}
 
-	if err == nil {
-		t.Errorf("Returned error is nil [URI: %s]", r.URI)
+	if err != nil {
+		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
 	}
 
-	if !strings.Contains(err.Error(), "Client.Timeout exceeded while awaiting headers") {
-		t.Errorf("Non-timeout error renturned [URI: %s]", r.URI)
+	if !strings.Contains(msg, "Client.Timeout exceeded while awaiting headers") {
+		t.Errorf("Non-timeout message renturned [URI: %s]", r.URI)
 	}
 }
 
