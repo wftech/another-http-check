@@ -77,11 +77,10 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 			}
 			checkedCerts[string(cert.Signature)] = true
 			expiresIn := int(cert.NotAfter.Sub(timeNow).Hours())
-			if e.SSLCheck.DaysCritical*24 >= expiresIn {
-				fmt.Println(fmt.Sprintf("%d %d", e.SSLCheck.DaysCritical*24, expiresIn))
+			if e.SSLCheck.DaysCritical > 0 && e.SSLCheck.DaysCritical*24 >= expiresIn {
 				return "CRITICAL", EXIT_CRITICAL
 			}
-			if e.SSLCheck.DaysWarning*24 >= expiresIn {
+			if e.SSLCheck.DaysWarning > 0 && e.SSLCheck.DaysWarning*24 >= expiresIn {
 				return "WARNING", EXIT_WARNING
 			}
 		}
