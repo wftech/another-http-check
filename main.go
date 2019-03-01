@@ -45,6 +45,11 @@ func main() {
 		scheme = "http"
 	}
 
+	port := options.Port
+	if scheme == "https" && port == 80 {
+		port = 443
+	}
+
 	authType := AUTH_NONE
 	if options.AuthBasic {
 		authType = AUTH_BASIC
@@ -79,7 +84,7 @@ func main() {
 		Host:      options.Host,
 		IPAddress: options.IPAdress,
 		URI:       options.URI,
-		Port:      options.Port,
+		Port:      port,
 		Scheme:    scheme,
 		Timeout:   options.Timeout,
 		Authentication: Authentication{
