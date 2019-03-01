@@ -39,7 +39,7 @@ func main() {
 	}
 
 	var scheme string
-	if options.SSL {
+	if options.Port == 443 || options.SSL {
 		scheme = "https"
 	} else {
 		scheme = "http"
