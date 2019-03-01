@@ -145,7 +145,7 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	start := time.Now()
 	timeInfo := func() string {
-		return fmt.Sprintf("time = %fs", float32(time.Now().UnixNano()-start.UnixNano())/float32(1000000000))
+		return fmt.Sprintf("time=%fs", float32(time.Now().UnixNano()-start.UnixNano())/float32(1000000000))
 	}
 	res, err := client.Do(request)
 	if err != nil {
