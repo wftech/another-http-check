@@ -14,7 +14,7 @@ type Options struct {
 	IPAdress      string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
 	URI           string `short:"u" long:"uri" description:"URI to check" default:"/"`
 	Port          int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
-	SSL           bool   `short:"S" long:"tls" description:"Use TLS"`
+	SSL           bool   `short:"S" long:"tls" description:"Use HTTPS"`
 	Timeout       int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
 	AuthBasic     bool   `long:"auth-basic" description:"Use bacis auth"`
 	AuthNtlm      bool   `long:"auth-ntlm" description:"Use NTLM auth"`
@@ -39,7 +39,7 @@ func main() {
 	}
 
 	var scheme string
-	if options.Port == 443 {
+	if options.SSL {
 		scheme = "https"
 	} else {
 		scheme = "http"
