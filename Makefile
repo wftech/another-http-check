@@ -4,7 +4,7 @@ APP_USER=${USER}
 CONTAINER_NAME=another-http-check
 BIN_NAME=another-http-check
 
-defualt: binary
+default: binary
 
 test: build
 	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) go test
