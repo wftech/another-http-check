@@ -22,6 +22,7 @@ type Options struct {
 	ExpectedCode  string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
 	BodyText      string `short:"s" long:"string" description:"Search for given string in response body" default:""`
 	SSLExpiration string `short:"C" description:"Check SSL cert expiration" default:""`
+	SSLNoVerify   bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
 	Verbose       bool   `short:"v" long:"verbose" description:"Verbose mode"`
 }
 
@@ -92,7 +93,8 @@ func main() {
 			User:     authUser,
 			Password: authPassword,
 		},
-		Verbose: options.Verbose,
+		SSLNoVerify: options.SSLNoVerify,
+		Verbose:     options.Verbose,
 	}
 
 	var statusCodes []int

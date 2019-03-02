@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
@@ -50,6 +51,7 @@ type Request struct {
 	URI            string
 	Timeout        int
 	Verbose        bool
+	SSLNoVerify    bool
 	Authentication Authentication
 }
 
@@ -100,6 +102,11 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		host = r.IPAddress
 	} else {
 		host = r.Host
+	}
+
+	// InsecureSkipVerify
+	if r.SSLNoVerify {
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	}
 
 	// Setup timeout
