@@ -143,8 +143,17 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	// TODO - test
 	if r.Authentication.Type == AUTH_NTLM {
-		transport := ntlmssp.Negotiator{
-			RoundTripper: &http.Transport{},
+		var transport ntlmssp.Negotiator
+		if r.SSLNoVerify {
+			transport = ntlmssp.Negotiator{
+				RoundTripper: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
+		} else {
+			transport = ntlmssp.Negotiator{
+				RoundTripper: &http.Transport{},
+			}
 		}
 		client.Transport = transport
 		request.SetBasicAuth(r.Authentication.User, r.Authentication.Password)
