@@ -24,6 +24,7 @@ type Options struct {
 	SSLExpiration string `short:"C" description:"Check SSL cert expiration" default:""`
 	SSLNoVerify   bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
 	Verbose       bool   `short:"v" long:"verbose" description:"Verbose mode"`
+	GuessAuth     bool   `long:"guess-auth" description:"Guess auth type"`
 }
 
 var options Options
@@ -95,6 +96,14 @@ func main() {
 		},
 		SSLNoVerify: options.SSLNoVerify,
 		Verbose:     options.Verbose,
+	}
+
+	if options.GuessAuth {
+		authType = DetectAuthType(r)
+		if r.Verbose {
+			fmt.Println(fmt.Sprintf(">> Detected auth: %s", authLookup[authType]))
+		}
+		r.Authentication.Type = authType
 	}
 
 	var statusCodes []int

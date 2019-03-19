@@ -62,6 +62,22 @@ type Expected struct {
 	SSLCheck    SSLCheck
 }
 
+var authLookup = map[int]string{
+	AUTH_NONE:  "none",
+	AUTH_BASIC: "basic auth",
+	AUTH_NTLM:  "NTLM auth",
+}
+
+func (r Request) GetURL() string {
+	var host string
+	if len(r.Host) == 0 {
+		host = r.IPAddress
+	} else {
+		host = r.Host
+	}
+	return fmt.Sprintf("%s://%s:%s%s", r.Scheme, host, strconv.Itoa(r.Port), r.URI)
+}
+
 func checkStatusCode(code int, e *Expected) bool {
 	for _, expectedCode := range e.StatusCodes {
 		if expectedCode == code {
@@ -92,18 +108,7 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 	return "", EXIT_OK
 }
 
-func Check(r *Request, e *Expected) (string, int, error) {
-	if len(r.Host) == 0 && len(r.IPAddress) == 0 {
-		return "UNKNOWN - No host or IP address given", EXIT_UNKNOWN, nil
-	}
-
-	var host string
-	if len(r.Host) == 0 {
-		host = r.IPAddress
-	} else {
-		host = r.Host
-	}
-
+func initHTTPClient(r *Request) *http.Client {
 	// InsecureSkipVerify
 	if r.SSLNoVerify {
 		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
@@ -120,7 +125,16 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		},
 	}
 
-	url := fmt.Sprintf("%s://%s:%s%s", r.Scheme, host, strconv.Itoa(r.Port), r.URI)
+	return client
+}
+
+func Check(r *Request, e *Expected) (string, int, error) {
+	if len(r.Host) == 0 && len(r.IPAddress) == 0 {
+		return "UNKNOWN - No host or IP address given", EXIT_UNKNOWN, nil
+	}
+
+	client := initHTTPClient(r)
+	url := r.GetURL()
 
 	if r.Verbose {
 		fmt.Println(">> URL: " + url)
@@ -210,4 +224,35 @@ func Check(r *Request, e *Expected) (string, int, error) {
 	}
 
 	return fmt.Sprintf("OK - Got response HTTP/1.1 %s|%s", strconv.Itoa(res.StatusCode), timeInfo()), EXIT_OK, nil
+}
+
+func DetectAuthType(r *Request) int {
+	client := initHTTPClient(r)
+	url := r.GetURL()
+
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		// XXX
+		return AUTH_NONE
+	}
+
+	res, err := client.Do(request)
+	if err != nil {
+		// XXX
+		return AUTH_NONE
+	}
+	defer res.Body.Close()
+
+	authHeaders, ok := res.Header["Www-Authenticate"]
+	if ok {
+		authHeader := strings.ToLower(authHeaders[0])
+		if strings.HasPrefix(authHeader, "negotiate") {
+			return AUTH_NTLM
+		}
+		if strings.HasPrefix(authHeader, "basic") {
+			return AUTH_BASIC
+		}
+	}
+
+	return AUTH_NONE
 }

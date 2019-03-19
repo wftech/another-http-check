@@ -38,6 +38,11 @@ echo
 echo "Status code: $?"
 echo
 
+./another-http-check -H httpbin.org -p 443 -u /basic-auth/user/password \
+    -a user:password --guess-auth -v
+echo "Status code: $?"
+echo
+
 ./another-http-check -H httpbin.org -p 443 -u /delay/10 -t 5 -v
 echo "Status code: $?"
 echo

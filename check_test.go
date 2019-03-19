@@ -317,3 +317,42 @@ func TestSSLWarning(t *testing.T) {
 		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
 	}
 }
+
+func TestNoneAuthDetect(t *testing.T) {
+	r := &Request{
+		Scheme:  "https",
+		Host:    "httpbin.org",
+		Port:    443,
+		URI:     "/basic-auth/user/password",
+		Timeout: 30,
+		Verbose: false,
+		Authentication: Authentication{
+			Type:     AUTH_BASIC,
+			User:     "user",
+			Password: "password",
+		},
+	}
+
+	authCode := DetectAuthType(r)
+
+	if authCode != AUTH_BASIC {
+		t.Errorf("Basic auth - wrong auth type detected")
+	}
+}
+
+func TestBasicAuthDetect(t *testing.T) {
+	r := &Request{
+		Scheme:  "https",
+		Host:    "httpbin.org",
+		Port:    443,
+		URI:     "/status/200",
+		Timeout: 30,
+		Verbose: false,
+	}
+
+	authCode := DetectAuthType(r)
+
+	if authCode != AUTH_NONE {
+		t.Errorf("None auth - wrong auth type detected")
+	}
+}
