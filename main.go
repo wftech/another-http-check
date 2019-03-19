@@ -35,7 +35,6 @@ func main() {
 		if flagsErr, ok := err.(*flags.Error); ok && flagsErr.Type == flags.ErrHelp {
 			os.Exit(0)
 		} else {
-			fmt.Println(err.Error())
 			os.Exit(1)
 		}
 	}
