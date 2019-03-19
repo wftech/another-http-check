@@ -18,7 +18,7 @@ type Options struct {
 	Timeout       int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
 	AuthBasic     bool   `long:"auth-basic" description:"Use bacis auth"`
 	AuthNtlm      bool   `long:"auth-ntlm" description:"Use NTLM auth"`
-	Auth          string `short:"a" long:"authorisation" description:"ex. user:passwrod" default:""`
+	Auth          string `short:"a" long:"auth" description:"ex. user:password" default:""`
 	ExpectedCode  string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
 	BodyText      string `short:"s" long:"string" description:"Search for given string in response body" default:""`
 	SSLExpiration string `short:"C" description:"Check SSL cert expiration" default:""`
@@ -122,7 +122,7 @@ func main() {
 	if strings.Contains(options.SSLExpiration, ",") {
 		SSLParts := strings.Split(options.SSLExpiration, ",")
 		if len(SSLParts) != 2 {
-			fmt.Println("UNKNOWN - SSL check has invalid parametrs: provide e.g. -C 14,7")
+			fmt.Println("UNKNOWN - SSL check has invalid parameters: provide e.g. -C 14,7")
 			os.Exit(EXIT_UNKNOWN)
 		}
 		SSLWarning, _ = strconv.Atoi(SSLParts[0])

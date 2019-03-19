@@ -62,12 +62,14 @@ type Expected struct {
 	SSLCheck    SSLCheck
 }
 
+// Lookup map for auth type names
 var authLookup = map[int]string{
 	AUTH_NONE:  "none",
 	AUTH_BASIC: "basic auth",
 	AUTH_NTLM:  "NTLM auth",
 }
 
+// URL getter
 func (r Request) GetURL() string {
 	var host string
 	if len(r.Host) == 0 {
@@ -78,6 +80,7 @@ func (r Request) GetURL() string {
 	return fmt.Sprintf("%s://%s:%s%s", r.Scheme, host, strconv.Itoa(r.Port), r.URI)
 }
 
+// Status code check helper
 func checkStatusCode(code int, e *Expected) bool {
 	for _, expectedCode := range e.StatusCodes {
 		if expectedCode == code {
@@ -87,6 +90,7 @@ func checkStatusCode(code int, e *Expected) bool {
 	return false
 }
 
+// Certificate check helper
 func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 	timeNow := time.Now()
 	checkedCerts := make(map[string]bool)
@@ -101,13 +105,14 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 				return fmt.Sprintf("CRITICAL - SSL cert expires in %f days", float32(expiresIn)/24), EXIT_CRITICAL
 			}
 			if e.SSLCheck.DaysWarning > 0 && e.SSLCheck.DaysWarning*24 >= expiresIn {
-				return fmt.Sprintf("WARNING - SSL cert expires in %f dasy", float32(expiresIn)/24), EXIT_WARNING
+				return fmt.Sprintf("WARNING - SSL cert expires in %f days", float32(expiresIn)/24), EXIT_WARNING
 			}
 		}
 	}
 	return "", EXIT_OK
 }
 
+// HTTP client factory
 func initHTTPClient(r *Request) *http.Client {
 	// InsecureSkipVerify
 	if r.SSLNoVerify {
@@ -128,6 +133,7 @@ func initHTTPClient(r *Request) *http.Client {
 	return client
 }
 
+// Main check function
 func Check(r *Request, e *Expected) (string, int, error) {
 	if len(r.Host) == 0 && len(r.IPAddress) == 0 {
 		return "UNKNOWN - No host or IP address given", EXIT_UNKNOWN, nil
@@ -226,19 +232,20 @@ func Check(r *Request, e *Expected) (string, int, error) {
 	return fmt.Sprintf("OK - Got response HTTP/1.1 %s|%s", strconv.Itoa(res.StatusCode), timeInfo()), EXIT_OK, nil
 }
 
+// Detects auth type
 func DetectAuthType(r *Request) int {
 	client := initHTTPClient(r)
 	url := r.GetURL()
 
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		// XXX
+		// `Check` should handle all errors
 		return AUTH_NONE
 	}
 
 	res, err := client.Do(request)
 	if err != nil {
-		// XXX
+		// `Check` should handle all errors
 		return AUTH_NONE
 	}
 	defer res.Body.Close()

@@ -106,7 +106,7 @@ func TestTimeout(t *testing.T) {
 	}
 
 	if !strings.Contains(msg, "Timeout - No response recieved in") {
-		t.Errorf("Non-timeout message renturned [URI: %s]", r.URI)
+		t.Errorf("Non-timeout message returned [URI: %s]", r.URI)
 	}
 }
 
