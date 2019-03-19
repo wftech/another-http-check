@@ -11,7 +11,7 @@ test: build
 
 binary: build clean
 	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) \
-		go build -ldflags '-d' -tags netgo -installsuffix netgo -o $(BIN_NAME)
+		go build -ldflags '-d -s -w' -tags netgo -installsuffix netgo -o $(BIN_NAME)
 
 runshell: build
 	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) sh
