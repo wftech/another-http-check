@@ -181,7 +181,7 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	// IP & host
 	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
-		request.Header.Add("Host", r.Host)
+		request.Host = r.Host
 	}
 
 	start := time.Now()
@@ -250,7 +250,7 @@ func DetectAuthType(r *Request) int {
 
 	// IP & host
 	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
-		request.Header.Add("Host", r.Host)
+		request.Host = r.Host
 	}
 
 	res, err := client.Do(request)
