@@ -72,7 +72,7 @@ var authLookup = map[int]string{
 // URL getter
 func (r Request) GetURL() string {
 	var host string
-	if len(r.Host) == 0 {
+	if len(r.IPAddress) > 0 {
 		host = r.IPAddress
 	} else {
 		host = r.Host
@@ -179,6 +179,11 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		request.SetBasicAuth(r.Authentication.User, r.Authentication.Password)
 	}
 
+	// IP & host
+	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
+		request.Header.Add("Host", r.Host)
+	}
+
 	start := time.Now()
 	timeInfo := func() string {
 		return fmt.Sprintf("time=%fs", float32(time.Now().UnixNano()-start.UnixNano())/float32(1000000000))
@@ -241,6 +246,11 @@ func DetectAuthType(r *Request) int {
 	if err != nil {
 		// `Check` should handle all errors
 		return AUTH_NONE
+	}
+
+	// IP & host
+	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
+		request.Header.Add("Host", r.Host)
 	}
 
 	res, err := client.Do(request)
