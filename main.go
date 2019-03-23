@@ -11,7 +11,7 @@ import (
 
 type Options struct {
 	Host          string `short:"H" description:"Host ex. google.com" default:""`
-	IPAdress      string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
+	IPAddress     string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
 	URI           string `short:"u" long:"uri" description:"URI to check" default:"/"`
 	Port          int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
 	SSL           bool   `short:"S" long:"tls" description:"Use HTTPS"`
@@ -83,7 +83,7 @@ func main() {
 
 	r := &Request{
 		Host:      options.Host,
-		IPAddress: options.IPAdress,
+		IPAddress: options.IPAddress,
 		URI:       options.URI,
 		Port:      port,
 		Scheme:    scheme,
