@@ -53,3 +53,11 @@ echo
 
 ./another-http-check -H httpbin.org -p 443 -C 999999,999999 -S -v
 echo "Status code: $?"
+echo
+
+./another-http-check -H self-signed.badssl.com -p 443 -v
+echo "Status code: $?"
+echo
+
+./another-http-check -H self-signed.badssl.com -p 443 -k -v
+echo "Status code: $?"

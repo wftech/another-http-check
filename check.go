@@ -80,6 +80,11 @@ func (r Request) GetURL() string {
 	return fmt.Sprintf("%s://%s:%s%s", r.Scheme, host, strconv.Itoa(r.Port), r.URI)
 }
 
+// Use SNI
+func (r Request) UseSNI() bool {
+	return len(r.Host) > 0 && len(r.IPAddress) > 0
+}
+
 // Status code check helper
 func checkStatusCode(code int, e *Expected) bool {
 	for _, expectedCode := range e.StatusCodes {
@@ -112,12 +117,26 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 	return "", EXIT_OK
 }
 
-// HTTP client factory
-func initHTTPClient(r *Request) *http.Client {
+// TLS config factory
+func getTLSConfig(r *Request) *tls.Config {
+	TLSConfig := &tls.Config{}
+
 	// InsecureSkipVerify
 	if r.SSLNoVerify {
-		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		TLSConfig.InsecureSkipVerify = true
 	}
+
+	// SNI
+	if r.UseSNI() {
+		TLSConfig.ServerName = r.Host
+	}
+
+	return TLSConfig
+}
+
+// HTTP client factory
+func initHTTPClient(r *Request) *http.Client {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig(r)
 
 	// Setup timeout
 	timeout := time.Duration(time.Duration(r.Timeout) * time.Second)
@@ -163,24 +182,17 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	// TODO - test
 	if r.Authentication.Type == AUTH_NTLM {
-		var transport ntlmssp.Negotiator
-		if r.SSLNoVerify {
-			transport = ntlmssp.Negotiator{
-				RoundTripper: &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				},
-			}
-		} else {
-			transport = ntlmssp.Negotiator{
-				RoundTripper: &http.Transport{},
-			}
+		transport := ntlmssp.Negotiator{
+			RoundTripper: &http.Transport{
+				TLSClientConfig: getTLSConfig(r),
+			},
 		}
 		client.Transport = transport
 		request.SetBasicAuth(r.Authentication.User, r.Authentication.Password)
 	}
 
 	// IP & host
-	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
+	if r.UseSNI() {
 		request.Host = r.Host
 	}
 
@@ -249,7 +261,7 @@ func DetectAuthType(r *Request) int {
 	}
 
 	// IP & host
-	if len(r.Host) > 0 && len(r.IPAddress) > 0 {
+	if r.UseSNI() {
 		request.Host = r.Host
 	}
 
