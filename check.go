@@ -275,7 +275,7 @@ func DetectAuthType(r *Request) int {
 	authHeaders, ok := res.Header["Www-Authenticate"]
 	if ok {
 		authHeader := strings.ToLower(authHeaders[0])
-		if strings.HasPrefix(authHeader, "negotiate") {
+		if strings.HasPrefix(authHeader, "ntlm") || strings.HasPrefix(authHeader, "negotiate") {
 			return AUTH_NTLM
 		}
 		if strings.HasPrefix(authHeader, "basic") {
