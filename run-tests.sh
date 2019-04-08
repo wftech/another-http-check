@@ -18,6 +18,10 @@ echo
 echo "Status code: $?"
 echo
 
+./another-http-check -H httpbin.org -p 443 -u /headers -s 'icinga-http-check' -v
+echo "Status code: $?"
+echo
+
 ./another-http-check -H httpbin.org -p 443 -u /basic-auth/user/password \
     --auth-basic -a user:password -v
 echo "Status code: $?"
