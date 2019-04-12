@@ -152,6 +152,11 @@ func initHTTPClient(r *Request) *http.Client {
 	return client
 }
 
+// Adds custom User-Agent header
+func setUserAgent(request *http.Request) {
+	request.Header.Set("User-Agent", fmt.Sprintf("icinga-http-check/%s Go-http-client/%s", appVersion, goVersion))
+}
+
 // Main check function
 func Check(r *Request, e *Expected) (string, int, error) {
 	if len(r.Host) == 0 && len(r.IPAddress) == 0 {
@@ -174,6 +179,9 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		}
 		return "UNKNOWN", EXIT_UNKNOWN, err
 	}
+
+	// User agent
+	setUserAgent(request)
 
 	// Authentication
 	if r.Authentication.Type == AUTH_BASIC {
@@ -259,6 +267,9 @@ func DetectAuthType(r *Request) int {
 		// `Check` should handle all errors
 		return AUTH_NONE
 	}
+
+	// User agent
+	setUserAgent(request)
 
 	// IP & host
 	if r.UseSNI() {

@@ -29,6 +29,8 @@ type Options struct {
 
 var options Options
 var parser = flags.NewParser(&options, flags.Default)
+var appVersion string
+var goVersion string
 
 func main() {
 	if _, err := parser.Parse(); err != nil {

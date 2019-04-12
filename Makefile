@@ -3,15 +3,19 @@ APP_GID=$(shell id --group)
 APP_USER=${USER}
 CONTAINER_NAME=another-http-check
 BIN_NAME=another-http-check
+GO_VERSION=$(shell grep FROM Dockerfile | awk '{ print $2 }' | sed 's/[a-z:-]//g' | xargs echo -n)
+APP_VERSION=$(shell date +"%Y%m%d")
 
 default: binary
 
 test: build
-	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) go test
+	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) \
+		go test -v -ldflags "-X main.goVersion=$(GO_VERSION) -X main.appVersion=$(APP_VERSION)"
 
 binary: build clean
 	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) \
-		go build -ldflags '-d -s -w' -tags netgo -installsuffix netgo -o $(BIN_NAME)
+		go build -ldflags "-d -s -w -X main.goVersion=$(GO_VERSION) -X main.appVersion=$(APP_VERSION)" \
+		-tags netgo -installsuffix netgo -o $(BIN_NAME)
 
 runshell: build
 	docker run -v $(CWD):/app -it --rm $(CONTAINER_NAME) sh
