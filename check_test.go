@@ -318,7 +318,7 @@ func TestSSLWarning(t *testing.T) {
 	}
 }
 
-func TestNoneAuthDetect(t *testing.T) {
+func TestBasicAuthDetect(t *testing.T) {
 	r := &Request{
 		Scheme:  "https",
 		Host:    "httpbin.org",
@@ -340,7 +340,7 @@ func TestNoneAuthDetect(t *testing.T) {
 	}
 }
 
-func TestBasicAuthDetect(t *testing.T) {
+func TestNoneAuthDetect(t *testing.T) {
 	r := &Request{
 		Scheme:  "https",
 		Host:    "httpbin.org",
