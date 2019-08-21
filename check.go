@@ -43,16 +43,17 @@ type SSLCheck struct {
 
 // Request
 type Request struct {
-	Scheme         string
-	Host           string
-	IPAddress      string
-	TLS            bool
-	Port           int
-	URI            string
-	Timeout        int
-	Verbose        bool
-	SSLNoVerify    bool
-	Authentication Authentication
+	Scheme          string
+	Host            string
+	IPAddress       string
+	TLS             bool
+	Port            int
+	URI             string
+	Timeout         int
+	Verbose         bool
+	SSLNoVerify     bool
+	Authentication  Authentication
+	FollowRedirects bool
 }
 
 // Check params
@@ -145,7 +146,11 @@ func initHTTPClient(r *Request) *http.Client {
 	client := &http.Client{
 		Timeout: timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
+			if r.FollowRedirects {
+				return nil
+			} else {
+				return http.ErrUseLastResponse
+			}
 		},
 	}
 

@@ -10,21 +10,22 @@ import (
 )
 
 type Options struct {
-	Host          string `short:"H" description:"Host ex. google.com" default:""`
-	IPAddress     string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
-	URI           string `short:"u" long:"uri" description:"URI to check" default:"/"`
-	Port          int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
-	SSL           bool   `short:"S" long:"tls" description:"Use HTTPS"`
-	Timeout       int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
-	AuthBasic     bool   `long:"auth-basic" description:"Use bacis auth"`
-	AuthNtlm      bool   `long:"auth-ntlm" description:"Use NTLM auth"`
-	Auth          string `short:"a" long:"auth" description:"ex. user:password" default:""`
-	ExpectedCode  string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
-	BodyText      string `short:"s" long:"string" description:"Search for given string in response body" default:""`
-	SSLExpiration string `short:"C" description:"Check SSL cert expiration" default:""`
-	SSLNoVerify   bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
-	Verbose       bool   `short:"v" long:"verbose" description:"Verbose mode"`
-	GuessAuth     bool   `long:"guess-auth" description:"Guess auth type"`
+	Host            string `short:"H" description:"Host ex. google.com" default:""`
+	IPAddress       string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
+	URI             string `short:"u" long:"uri" description:"URI to check" default:"/"`
+	Port            int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
+	SSL             bool   `short:"S" long:"tls" description:"Use HTTPS"`
+	Timeout         int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
+	AuthBasic       bool   `long:"auth-basic" description:"Use bacis auth"`
+	AuthNtlm        bool   `long:"auth-ntlm" description:"Use NTLM auth"`
+	Auth            string `short:"a" long:"auth" description:"ex. user:password" default:""`
+	ExpectedCode    string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
+	BodyText        string `short:"s" long:"string" description:"Search for given string in response body" default:""`
+	SSLExpiration   string `short:"C" description:"Check SSL cert expiration" default:""`
+	SSLNoVerify     bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
+	Verbose         bool   `short:"v" long:"verbose" description:"Verbose mode"`
+	GuessAuth       bool   `long:"guess-auth" description:"Guess auth type"`
+	FollowRedirects bool   `long:"follow-redirects" description:"Follow redirects"`
 }
 
 var options Options
@@ -95,8 +96,9 @@ func main() {
 			User:     authUser,
 			Password: authPassword,
 		},
-		SSLNoVerify: options.SSLNoVerify,
-		Verbose:     options.Verbose,
+		SSLNoVerify:     options.SSLNoVerify,
+		Verbose:         options.Verbose,
+		FollowRedirects: options.FollowRedirects,
 	}
 
 	if options.GuessAuth {

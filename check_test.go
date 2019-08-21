@@ -388,3 +388,36 @@ func TestUserAgent(t *testing.T) {
 		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
 	}
 }
+
+func TestFollowRedirects(t *testing.T) {
+	r := &Request{
+		Scheme:          "https",
+		Host:            "httpbin.org",
+		Port:            443,
+		URI:             "/absolute-redirect/5",
+		FollowRedirects: true,
+		Timeout:         30,
+		Verbose:         false,
+	}
+
+	var currrentStatusCodes []int
+	currrentStatusCodes = append(currrentStatusCodes, 200)
+	e := &Expected{
+		StatusCodes: currrentStatusCodes,
+		BodyText:    fmt.Sprintf("icinga-http-check/%s Go-http-client/%s", appVersion, goVersion),
+	}
+
+	msg, code, err := Check(r, e)
+
+	if !strings.HasPrefix(msg, "OK") {
+		t.Errorf("Wrong message [URI: %s]", r.URI)
+	}
+
+	if code != EXIT_OK {
+		t.Errorf("Wrong exit code [URI: %s]", r.URI)
+	}
+
+	if err != nil {
+		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
+	}
+}
