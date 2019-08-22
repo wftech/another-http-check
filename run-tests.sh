@@ -74,3 +74,11 @@ echo
 
 ./another-http-check -H httpbin.org -p 443 -u /absolute-redirect/3 -v
 echo "Status code: $?"
+echo
+
+./another-http-check -H httpbin.org -p 443 -u /delay/5 -w 4 -c 8 -v
+echo "Status code: $?"
+echo
+
+./another-http-check -H httpbin.org -p 443 -u /delay/10 -w 4 -c 8 -v
+echo "Status code: $?"

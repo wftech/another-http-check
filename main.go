@@ -26,6 +26,8 @@ type Options struct {
 	Verbose         bool   `short:"v" long:"verbose" description:"Verbose mode"`
 	GuessAuth       bool   `long:"guess-auth" description:"Guess auth type"`
 	FollowRedirects bool   `long:"follow-redirects" description:"Follow redirects"`
+	WarningTimeout  int    `short:"w" description:"Warning timeout" default:"0"`
+	CriticalTimeout int    `short:"c" description:"Critical timeout" default:"0"`
 }
 
 var options Options
@@ -99,6 +101,8 @@ func main() {
 		SSLNoVerify:     options.SSLNoVerify,
 		Verbose:         options.Verbose,
 		FollowRedirects: options.FollowRedirects,
+		WarningTimeout:  options.WarningTimeout,
+		CriticalTimeout: options.CriticalTimeout,
 	}
 
 	if options.GuessAuth {

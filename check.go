@@ -54,6 +54,8 @@ type Request struct {
 	SSLNoVerify     bool
 	Authentication  Authentication
 	FollowRedirects bool
+	WarningTimeout  int
+	CriticalTimeout int
 }
 
 // Check params
@@ -84,6 +86,11 @@ func (r Request) GetURL() string {
 // Use SNI
 func (r Request) UseSNI() bool {
 	return len(r.Host) > 0 && len(r.IPAddress) > 0
+}
+
+// Use timeout interval
+func (r Request) UseTimoutInterval() bool {
+	return r.WarningTimeout > 0 && r.CriticalTimeout > 0 && r.WarningTimeout < r.CriticalTimeout
 }
 
 // Status code check helper
@@ -140,7 +147,12 @@ func initHTTPClient(r *Request) *http.Client {
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig(r)
 
 	// Setup timeout
-	timeout := time.Duration(time.Duration(r.Timeout) * time.Second)
+	var timeout time.Duration
+	if r.UseTimoutInterval() {
+		timeout = time.Duration(time.Duration(r.CriticalTimeout) * time.Second)
+	} else {
+		timeout = time.Duration(time.Duration(r.Timeout) * time.Second)
+	}
 
 	// Init client
 	client := &http.Client{
@@ -219,12 +231,26 @@ func Check(r *Request, e *Expected) (string, int, error) {
 			fmt.Println(fmt.Sprintf(">> client.GET error: %v", err))
 		}
 		if err, ok := err.(net.Error); ok && err.Timeout() {
-			return fmt.Sprintf("CRITICAL - Timeout - No response recieved in %d seconds|%s", r.Timeout, timeInfo()), EXIT_CRITICAL, nil
+			var timeout int
+			if r.UseTimoutInterval() {
+				timeout = r.CriticalTimeout
+			} else {
+				timeout = r.Timeout
+			}
+			return fmt.Sprintf("CRITICAL - Timeout - No response recieved in %d seconds|%s", timeout, timeInfo()), EXIT_CRITICAL, nil
 		}
 		return fmt.Sprintf("CRITICAL - %s|%s", err.Error(), timeInfo()), EXIT_CRITICAL, nil
 	}
 
 	defer res.Body.Close()
+
+	// Timeout interval
+	if r.UseTimoutInterval() {
+		delta := float32(time.Now().UnixNano()-start.UnixNano()) / float32(1000000000)
+		if delta >= float32(r.WarningTimeout) {
+			return fmt.Sprintf("WARNING - Timeout - No response recieved in %d seconds|%s", r.WarningTimeout, timeInfo()), EXIT_WARNING, nil
+		}
+	}
 
 	if r.Verbose {
 		fmt.Println(fmt.Sprintf(">> Response status: %s", res.Status))

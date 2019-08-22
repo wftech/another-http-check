@@ -110,6 +110,78 @@ func TestTimeout(t *testing.T) {
 	}
 }
 
+func TestTimeoutWarning(t *testing.T) {
+	r := &Request{
+		Scheme:          "https",
+		Host:            "httpbin.org",
+		Port:            443,
+		URI:             "/delay/10",
+		WarningTimeout:  5,
+		CriticalTimeout: 15,
+		Verbose:         false,
+	}
+
+	var currrentStatusCodes []int
+	currrentStatusCodes = append(currrentStatusCodes, 200)
+	e := &Expected{
+		StatusCodes: currrentStatusCodes,
+	}
+
+	msg, code, err := Check(r, e)
+
+	if !strings.HasPrefix(msg, "WARNING") {
+		t.Errorf("Wrong message [URI: %s]", r.URI)
+	}
+
+	if code != EXIT_WARNING {
+		t.Errorf("Wrong exit code [URI: %s]", r.URI)
+	}
+
+	if err != nil {
+		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
+	}
+
+	if !strings.Contains(msg, "Timeout - No response recieved in") {
+		t.Errorf("Non-timeout message returned [URI: %s]", r.URI)
+	}
+}
+
+func TestTimeoutCritical(t *testing.T) {
+	r := &Request{
+		Scheme:          "https",
+		Host:            "httpbin.org",
+		Port:            443,
+		URI:             "/delay/10",
+		WarningTimeout:  4,
+		CriticalTimeout: 8,
+		Verbose:         false,
+	}
+
+	var currrentStatusCodes []int
+	currrentStatusCodes = append(currrentStatusCodes, 200)
+	e := &Expected{
+		StatusCodes: currrentStatusCodes,
+	}
+
+	msg, code, err := Check(r, e)
+
+	if !strings.HasPrefix(msg, "CRITICAL") {
+		t.Errorf("Wrong message [URI: %s]", r.URI)
+	}
+
+	if code != EXIT_CRITICAL {
+		t.Errorf("Wrong exit code [URI: %s]", r.URI)
+	}
+
+	if err != nil {
+		t.Errorf("Returned error is not nil [URI: %s]", r.URI)
+	}
+
+	if !strings.Contains(msg, "Timeout - No response recieved in") {
+		t.Errorf("Non-timeout message returned [URI: %s]", r.URI)
+	}
+}
+
 func TestBasicAuthSuccess(t *testing.T) {
 	r := &Request{
 		Scheme:  "https",
