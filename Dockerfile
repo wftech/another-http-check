@@ -3,9 +3,11 @@ FROM golang:1.12-alpine
 ARG APP_GID
 ARG APP_USER
 
-RUN apk add gcc g++ ca-certificates git curl vim
+RUN apk add gcc g++ ca-certificates git curl vim rpm
 
 RUN adduser -D -u ${APP_GID} -g ${APP_USER} ${APP_USER}
+
+ADD .rpmmacros /home/${APP_USER}
 
 USER ${APP_USER}
 
