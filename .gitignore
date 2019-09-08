@@ -1,1 +1,3 @@
 another-http-check
+rpmbuild/*
+*.rpm
