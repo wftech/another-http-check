@@ -56,6 +56,7 @@ type Request struct {
 	FollowRedirects bool
 	WarningTimeout  int
 	CriticalTimeout int
+	NoSNI           bool
 }
 
 // Check params
@@ -81,11 +82,6 @@ func (r Request) GetURL() string {
 		host = r.Host
 	}
 	return fmt.Sprintf("%s://%s:%s%s", r.Scheme, host, strconv.Itoa(r.Port), r.URI)
-}
-
-// Use SNI
-func (r Request) UseSNI() bool {
-	return len(r.Host) > 0 && len(r.IPAddress) > 0
 }
 
 // Use timeout interval
@@ -135,7 +131,7 @@ func getTLSConfig(r *Request) *tls.Config {
 	}
 
 	// SNI
-	if r.UseSNI() {
+	if !r.NoSNI && len(r.Host) > 0 {
 		TLSConfig.ServerName = r.Host
 	}
 
@@ -216,8 +212,8 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		request.SetBasicAuth(r.Authentication.User, r.Authentication.Password)
 	}
 
-	// IP & host
-	if r.UseSNI() {
+	// SNI
+	if !r.NoSNI && len(r.Host) > 0 {
 		request.Host = r.Host
 	}
 
@@ -302,8 +298,8 @@ func DetectAuthType(r *Request) int {
 	// User agent
 	setUserAgent(request)
 
-	// IP & host
-	if r.UseSNI() {
+	// SNI
+	if !r.NoSNI && len(r.Host) > 0 {
 		request.Host = r.Host
 	}
 

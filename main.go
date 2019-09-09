@@ -28,6 +28,7 @@ type Options struct {
 	FollowRedirects bool   `long:"follow-redirects" description:"Follow redirects"`
 	WarningTimeout  int    `short:"w" description:"Warning timeout" default:"0"`
 	CriticalTimeout int    `short:"c" description:"Critical timeout" default:"0"`
+	NoSNI           bool   `long:"no-sni" description:"Do not use SNI"`
 }
 
 var options Options
@@ -103,6 +104,7 @@ func main() {
 		FollowRedirects: options.FollowRedirects,
 		WarningTimeout:  options.WarningTimeout,
 		CriticalTimeout: options.CriticalTimeout,
+		NoSNI:           options.NoSNI,
 	}
 
 	if options.GuessAuth {
