@@ -29,6 +29,8 @@ type Options struct {
 	WarningTimeout  int    `short:"w" description:"Warning timeout" default:"0"`
 	CriticalTimeout int    `short:"c" description:"Critical timeout" default:"0"`
 	NoSNI           bool   `long:"no-sni" description:"Do not use SNI"`
+	ClientCertFile  string `short:"J" long:"client-cert" description:"Name of file containing the client certificate (PEM format) to be used in establishing the SSL session"`
+	PrivateKeyFile  string `short:"K" long:"private-key" description:"Name of file containing the private key (PEM format) matching the client certificate"`
 }
 
 var options Options
@@ -105,6 +107,10 @@ func main() {
 		WarningTimeout:  options.WarningTimeout,
 		CriticalTimeout: options.CriticalTimeout,
 		NoSNI:           options.NoSNI,
+		ClientCert: ClientCert{
+			ClientCertFile: options.ClientCertFile,
+			PrivateKeyFile: options.PrivateKeyFile,
+		},
 	}
 
 	if options.GuessAuth {
