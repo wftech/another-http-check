@@ -41,6 +41,11 @@ type SSLCheck struct {
 	DaysCritical int
 }
 
+type ClientCert struct {
+	ClientCertFile string
+	PrivateKeyFile string
+}
+
 // Request
 type Request struct {
 	Scheme          string
@@ -57,6 +62,7 @@ type Request struct {
 	WarningTimeout  int
 	CriticalTimeout int
 	NoSNI           bool
+	ClientCert      ClientCert
 }
 
 // Check params
@@ -122,7 +128,7 @@ func checkCerts(certs [][]*x509.Certificate, e *Expected) (string, int) {
 }
 
 // TLS config factory
-func getTLSConfig(r *Request) *tls.Config {
+func getTLSConfig(r *Request) (*tls.Config, error) {
 	TLSConfig := &tls.Config{}
 
 	// InsecureSkipVerify
@@ -135,12 +141,27 @@ func getTLSConfig(r *Request) *tls.Config {
 		TLSConfig.ServerName = r.Host
 	}
 
-	return TLSConfig
+	// Client cert
+	if r.ClientCert.ClientCertFile != "" && r.ClientCert.PrivateKeyFile != "" {
+		cert, err := tls.LoadX509KeyPair(r.ClientCert.ClientCertFile, r.ClientCert.PrivateKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		TLSConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	return TLSConfig, nil
 }
 
 // HTTP client factory
-func initHTTPClient(r *Request) *http.Client {
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = getTLSConfig(r)
+func initHTTPClient(r *Request) (*http.Client, error) {
+	// Get TLS config
+	TLSConfig, err := getTLSConfig(r)
+	if err != nil {
+		return nil, err
+	}
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = TLSConfig
 
 	// Setup timeout
 	var timeout time.Duration
@@ -162,7 +183,7 @@ func initHTTPClient(r *Request) *http.Client {
 		},
 	}
 
-	return client
+	return client, nil
 }
 
 // Adds custom User-Agent header
@@ -176,7 +197,11 @@ func Check(r *Request, e *Expected) (string, int, error) {
 		return "UNKNOWN - No host or IP address given", EXIT_UNKNOWN, nil
 	}
 
-	client := initHTTPClient(r)
+	client, err := initHTTPClient(r)
+	if err != nil {
+		return "CRITICAL", EXIT_CRITICAL, err
+	}
+
 	url := r.GetURL()
 
 	if r.Verbose {
@@ -203,9 +228,14 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 	// TODO - test
 	if r.Authentication.Type == AUTH_NTLM {
+		// Get TLS config
+		TLSConfig, err := getTLSConfig(r)
+		if err != nil {
+			return "CRITICAL", EXIT_CRITICAL, err
+		}
 		transport := ntlmssp.Negotiator{
 			RoundTripper: &http.Transport{
-				TLSClientConfig: getTLSConfig(r),
+				TLSClientConfig: TLSConfig,
 			},
 		}
 		client.Transport = transport
@@ -286,7 +316,12 @@ func Check(r *Request, e *Expected) (string, int, error) {
 
 // Detects auth type
 func DetectAuthType(r *Request) int {
-	client := initHTTPClient(r)
+	client, err := initHTTPClient(r)
+	if err != nil {
+		// `Check` should handle all errors
+		return AUTH_NONE
+	}
+
 	url := r.GetURL()
 
 	request, err := http.NewRequest("GET", url, nil)
