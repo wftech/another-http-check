@@ -10,27 +10,28 @@ import (
 )
 
 type Options struct {
-	Host            string `short:"H" description:"Host ex. google.com" default:""`
-	IPAddress       string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
-	URI             string `short:"u" long:"uri" description:"URI to check" default:"/"`
-	Port            int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
-	SSL             bool   `short:"S" long:"tls" description:"Use HTTPS"`
-	Timeout         int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
-	AuthBasic       bool   `long:"auth-basic" description:"Use bacis auth"`
-	AuthNtlm        bool   `long:"auth-ntlm" description:"Use NTLM auth"`
-	Auth            string `short:"a" long:"auth" description:"ex. user:password" default:""`
-	ExpectedCode    string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
-	BodyText        string `short:"s" long:"string" description:"Search for given string in response body" default:""`
-	SSLExpiration   string `short:"C" description:"Check SSL cert expiration" default:""`
-	SSLNoVerify     bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
-	Verbose         bool   `short:"v" long:"verbose" description:"Verbose mode"`
-	GuessAuth       bool   `long:"guess-auth" description:"Guess auth type"`
-	FollowRedirects bool   `long:"follow-redirects" description:"Follow redirects"`
-	WarningTimeout  int    `short:"w" description:"Warning timeout" default:"0"`
-	CriticalTimeout int    `short:"c" description:"Critical timeout" default:"0"`
-	NoSNI           bool   `long:"no-sni" description:"Do not use SNI"`
-	ClientCertFile  string `short:"J" long:"client-cert" description:"Name of file containing the client certificate (PEM format) to be used in establishing the SSL session"`
-	PrivateKeyFile  string `short:"K" long:"private-key" description:"Name of file containing the private key (PEM format) matching the client certificate"`
+	Host                    string `short:"H" description:"Host ex. google.com" default:""`
+	IPAddress               string `short:"I" description:"IPv4 address ex. 8.8.4.4" default:""`
+	URI                     string `short:"u" long:"uri" description:"URI to check" default:"/"`
+	Port                    int    `short:"p" description:"Port ex. 80 for HTTP 443 for HTTPS" default:"80"`
+	SSL                     bool   `short:"S" long:"tls" description:"Use HTTPS"`
+	Timeout                 int    `short:"t" long:"timeout" description:"Timeout" default:"30"`
+	AuthBasic               bool   `long:"auth-basic" description:"Use bacis auth"`
+	AuthNtlm                bool   `long:"auth-ntlm" description:"Use NTLM auth"`
+	Auth                    string `short:"a" long:"auth" description:"ex. user:password" default:""`
+	ExpectedCode            string `short:"e" long:"expect" description:"Expected HTTP code" default:"200"`
+	BodyText                string `short:"s" long:"string" description:"Search for given string in response body" default:""`
+	SSLExpiration           string `short:"C" description:"Check SSL cert expiration" default:""`
+	SSLNoVerify             bool   `short:"k" long:"insecure" description:"Controls whether a client verifies the server's certificate chain and host name"`
+	Verbose                 bool   `short:"v" long:"verbose" description:"Verbose mode"`
+	GuessAuth               bool   `long:"guess-auth" description:"Guess auth type"`
+	FollowRedirects         bool   `long:"follow-redirects" description:"Follow redirects"`
+	WarningTimeout          int    `short:"w" description:"Warning timeout" default:"0"`
+	CriticalTimeout         int    `short:"c" description:"Critical timeout" default:"0"`
+	NoSNI                   bool   `long:"no-sni" description:"Do not use SNI"`
+	ClientCertFile          string `short:"J" long:"client-cert" description:"Name of file containing the client certificate (PEM format) to be used in establishing the SSL session"`
+	PrivateKeyFile          string `short:"K" long:"private-key" description:"Name of file containing the private key (PEM format) matching the client certificate"`
+	DisableTLSRenegotiation bool   `long:"disable-tls-renegotiation" description:"Disable TLS Renegotiation"`
 }
 
 var options Options
@@ -111,6 +112,7 @@ func main() {
 			ClientCertFile: options.ClientCertFile,
 			PrivateKeyFile: options.PrivateKeyFile,
 		},
+		TLSRenegotiation: !options.DisableTLSRenegotiation,
 	}
 
 	if options.GuessAuth {

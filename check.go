@@ -48,21 +48,22 @@ type ClientCert struct {
 
 // Request
 type Request struct {
-	Scheme          string
-	Host            string
-	IPAddress       string
-	TLS             bool
-	Port            int
-	URI             string
-	Timeout         int
-	Verbose         bool
-	SSLNoVerify     bool
-	Authentication  Authentication
-	FollowRedirects bool
-	WarningTimeout  int
-	CriticalTimeout int
-	NoSNI           bool
-	ClientCert      ClientCert
+	Scheme           string
+	Host             string
+	IPAddress        string
+	TLS              bool
+	Port             int
+	URI              string
+	Timeout          int
+	Verbose          bool
+	SSLNoVerify      bool
+	Authentication   Authentication
+	FollowRedirects  bool
+	WarningTimeout   int
+	CriticalTimeout  int
+	NoSNI            bool
+	ClientCert       ClientCert
+	TLSRenegotiation bool
 }
 
 // Check params
@@ -148,6 +149,11 @@ func getTLSConfig(r *Request) (*tls.Config, error) {
 			return nil, err
 		}
 		TLSConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	// Renegotiation
+	if r.TLSRenegotiation {
+		TLSConfig.Renegotiation = tls.RenegotiateOnceAsClient
 	}
 
 	return TLSConfig, nil
